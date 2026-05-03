@@ -30,8 +30,8 @@ exports.sendSignupOtp = async (req, res) => {
       if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
         const transporter = nodemailer.createTransport({
           host: process.env.EMAIL_HOST,
-          port: parseInt(process.env.EMAIL_PORT, 10),
-          secure: parseInt(process.env.EMAIL_PORT, 10) === 465,
+          port: 587,
+          secure: false, // Use STARTTLS
           family: 4,
           logger: true,
           debug: true,
@@ -259,8 +259,8 @@ exports.forgotPassword = async (req, res) => {
       if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
         const transporter = nodemailer.createTransport({
           host: process.env.EMAIL_HOST,
-          port: parseInt(process.env.EMAIL_PORT, 10),
-          secure: parseInt(process.env.EMAIL_PORT, 10) === 465,
+          port: 587,
+          secure: false, // Use STARTTLS
           family: 4,
           logger: true, // Log SMTP traffic
           debug: true,  // Show debug info
