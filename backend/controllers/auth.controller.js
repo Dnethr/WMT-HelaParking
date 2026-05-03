@@ -23,20 +23,31 @@ exports.sendSignupOtp = async (req, res) => {
 
     console.log(`[SIGNUP OTP FOR ${email}]: ${otp}`);
 
+    // RETURN IMMEDIATELY
+    res.status(200).json({ message: 'OTP generated. Please check server logs.' });
+
     try {
       if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
         const transporter = nodemailer.createTransport({
           host: process.env.EMAIL_HOST,
-          port: process.env.EMAIL_PORT,
+          port: parseInt(process.env.EMAIL_PORT, 10),
+          secure: parseInt(process.env.EMAIL_PORT, 10) === 465,
+          family: 4,
+          logger: true,
+          debug: true,
           auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+          lookup: (hostname, options, callback) => {
+            const dns = require('dns');
+            dns.lookup(hostname, { family: 4 }, callback);
+          }
         });
 
-        await transporter.sendMail({
+        transporter.sendMail({
           from: process.env.EMAIL_USER,
           to: email,
           subject: 'HelaParking — Email Verification Code',
           html: `<p>Your signup verification code is: <strong>${otp}</strong>. It expires in 15 minutes.</p>`,
-        });
+        }).catch(err => console.error('Signup mail background error:', err.message));
       }
     } catch (err) {
       console.error('Send signup OTP mail error:', err);
@@ -243,40 +254,43 @@ exports.forgotPassword = async (req, res) => {
 
     console.log(`[PASSWORD RESET OTP FOR ${email}]: ${otp}`);
 
-    let mailSent = false;
+    // RETURN IMMEDIATELY - Don't wait for DB or Email
+    res.status(200).json({ message: 'Reset code generated. Please check your logs/email.' });
+
     try {
       const nodemailer = require('nodemailer');
       if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
         const transporter = nodemailer.createTransport({
           host: process.env.EMAIL_HOST,
-          port: process.env.EMAIL_PORT,
+          port: parseInt(process.env.EMAIL_PORT, 10),
+          secure: parseInt(process.env.EMAIL_PORT, 10) === 465,
+          family: 4,
+          logger: true, // Log SMTP traffic
+          debug: true,  // Show debug info
           auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASS,
           },
+          lookup: (hostname, options, callback) => {
+            const dns = require('dns');
+            dns.lookup(hostname, { family: 4 }, callback);
+          }
         });
 
-        await transporter.sendMail({
+        // Fire and forget (don't await so frontend doesn't hang)
+        transporter.sendMail({
           from: process.env.EMAIL_USER,
           to: email,
           subject: 'HelaParking — Password Reset OTP',
           html: `<p>Your password reset OTP is: <strong>${otp}</strong>. It expires in 15 minutes.</p>`,
-        });
-        mailSent = true;
+        }).catch(err => console.error('Reset mail background error:', err.message));
       }
     } catch (mailError) {
       console.error('Email sending error:', mailError.message);
-      return res.status(500).json({ message: `Failed to send reset email: ${mailError.message}` });
     }
-
-    if (!mailSent) {
-      return res.status(200).json({ message: 'Reset code generated. Please check server console logs for the OTP code.' });
-    }
-
-    res.status(200).json({ message: 'Password reset code has been sent to your email.' });
   } catch (error) {
     console.error('ForgotPassword error:', error);
-    res.status(500).json({ message: 'Something went wrong.' });
+    // Note: Response already sent
   }
 };
 

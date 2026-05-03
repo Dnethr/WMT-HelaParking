@@ -4,7 +4,7 @@ import { useAuthStore } from '../store/authStore';
 
 const api = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.24:4000',
-  timeout: 10000,
+  timeout: 30000,
 });
 
 // Attach token to every request

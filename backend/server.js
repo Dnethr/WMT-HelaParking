@@ -1,4 +1,8 @@
 require('dotenv').config();
+const dns = require('dns');
+// Force IPv4 as priority for all network operations (Fixes Railway ENETUNREACH)
+dns.setDefaultResultOrder('ipv4first');
+
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
