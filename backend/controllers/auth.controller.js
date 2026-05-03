@@ -52,11 +52,8 @@ exports.sendSignupOtp = async (req, res) => {
     } catch (err) {
       console.error('Send signup OTP mail error:', err);
     }
-
-    res.status(200).json({ message: 'OTP sent successfully.' });
   } catch (error) {
     console.error('SendSignupOtp error:', error);
-    res.status(500).json({ message: 'Something went wrong.' });
   }
 };
 
